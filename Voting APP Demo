@@ -46,7 +46,7 @@ pod "db-b54cd94f4-pjk8p" deleted
 NAME                      READY   STATUS    RESTARTS   AGE
 db-b54cd94f4-qm25g        1/1     Running   0          42s
 
-After db pod recreate able to vote but not able to see the results.
+After new db pod create able to vote but not able to see the results.
 
 Due to overwhelming of nodeport, the result pod stops working
 
