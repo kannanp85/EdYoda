@@ -1,0 +1,71 @@
+I have craeted pod's, services, db & rs with kubectl apply -f . For vote & result Nodeport is assigned
+
+[root@ip-172-31-5-72 k8s-specifications]# kubectl get all
+NAME                          READY   STATUS    RESTARTS   AGE
+pod/db-b54cd94f4-pjk8p        1/1     Running   0          107s
+pod/redis-868d64d78-n2ssn     1/1     Running   0          107s
+pod/result-5d57b59f4b-bhmtk   1/1     Running   0          107s
+pod/vote-94849dc97-wtgmj      1/1     Running   0          107s
+pod/worker-dd46d7584-ljr9f    1/1     Running   0          107s
+
+NAME             TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)          AGE
+service/db       ClusterIP   10.99.65.187     <none>        5432/TCP         107s
+service/redis    ClusterIP   10.103.210.40    <none>        6379/TCP         107s
+service/result   NodePort    10.107.250.166   <none>        5001:31003/TCP   107s
+service/vote     NodePort    10.104.168.254   <none>        5000:31002/TCP   107s
+
+
+Able to vote and see the respective results in results page.
+
+Deleted the Voting pod & new pod created due to rs.
+
+[root@ip-172-31-5-72 k8s-specifications]# kubectl delete pod vote-94849dc97-wtgmj
+pod "vote-94849dc97-wtgmj" deleted
+[root@ip-172-31-5-72 k8s-specifications]#
+
+vote-94849dc97-v9h5g      1/1     Running   0          5s
+
+Same new pod is refelecting in Voting GUI page.
+
+Deleted worker pod & new worker pod created.
+
+[root@ip-172-31-5-72 k8s-specifications]# kubectl delete pod worker-dd46d7584-ljr9f
+pod "worker-dd46d7584-ljr9f" deleted
+
+worker-dd46d7584-z4hlf    1/1     Running       0          6s
+
+There is no change in Vote & Result GUI page. Able to vote and see the results.
+
+
+Deleted the db pod & new db pod created
+
+[root@ip-172-31-5-72 k8s-specifications]# kubectl delete pod db-b54cd94f4-pjk8p
+pod "db-b54cd94f4-pjk8p" deleted
+
+[root@ip-172-31-5-72 k8s-specifications]# kubectl get pod
+NAME                      READY   STATUS    RESTARTS   AGE
+db-b54cd94f4-qm25g        1/1     Running   0          42s
+
+After db pod recreate able to vote but not able to see the results.
+
+Due to overwhelming of nodeport, the result pod stops working
+
+So incresed the scaling of result pod to 2
+
+[root@ip-172-31-5-72 k8s-specifications]# kubectl scale deploy result --replicas=2
+deployment.apps/result scaled
+[root@ip-172-31-5-72 k8s-specifications]#
+
+
+[root@ip-172-31-5-72 k8s-specifications]# kubectl get pods
+NAME                      READY   STATUS    RESTARTS   AGE
+db-b54cd94f4-qm25g        1/1     Running   0          7h28m
+redis-868d64d78-n2ssn     1/1     Running   0          9h
+result-5d57b59f4b-bhmtk   1/1     Running   0          9h
+result-5d57b59f4b-gghqh   1/1     Running   0          16s
+vote-94849dc97-v9h5g      1/1     Running   0          8h
+worker-dd46d7584-z4hlf    1/1     Running   1          8h
+[root@ip-172-31-5-72 k8s-specifications]#
+
+
+After that able to see the results in results page for respective votes.
