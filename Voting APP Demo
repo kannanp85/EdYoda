@@ -1,4 +1,4 @@
-I have craeted pod's, services, db & rs with kubectl apply -f . For vote & result Nodeport is assigned
+I have created pod's, services, db & rs with kubectl apply -f . For vote & result Nodeport is assigned
 
 [root@ip-172-31-5-72 k8s-specifications]# kubectl get all
 NAME                          READY   STATUS    RESTARTS   AGE
@@ -34,7 +34,9 @@ pod "worker-dd46d7584-ljr9f" deleted
 
 worker-dd46d7584-z4hlf    1/1     Running       0          6s
 
-There is no change in Vote & Result GUI page. Able to vote and see the results.
+The previous vote logs are removed after worker pod deletion
+
+Able to vote and see the results of current votes in GUI.
 
 
 Deleted the db pod & new db pod created
@@ -48,24 +50,34 @@ db-b54cd94f4-qm25g        1/1     Running   0          42s
 
 After new db pod create able to vote but not able to see the results.
 
-Due to overwhelming of nodeport, the result pod stops working
+The socket connections with db is closed from result pod. So not able to see the results.
 
-So incresed the scaling of result pod to 2
+[root@ip-172-31-5-72 ~]# kubectl logs result-5d57b59f4b-bhmtk
+Mon, 05 Dec 2022 07:35:06 GMT body-parser deprecated bodyParser: use individual json/urlencoded middlewares at server.js:67:9
+Mon, 05 Dec 2022 07:35:06 GMT body-parser deprecated undefined extended: provide extended option at ../node_modules/body-parser/index.js:105:29
+App running on port 80
+Connected to db
+Error performing query: Error: This socket has been ended by the other party
+[root@ip-172-31-5-72 ~]#
 
-[root@ip-172-31-5-72 k8s-specifications]# kubectl scale deploy result --replicas=2
-deployment.apps/result scaled
-[root@ip-172-31-5-72 k8s-specifications]#
+So deleted the result pod to establish the socket connection with new result pod & db.
+
+[root@ip-172-31-5-72 ~]# kubectl delete pod result-5d57b59f4b-bhmtk
+pod "result-5d57b59f4b-bhmtk" deleted
+
+result-5d57b59f4b-xhl5b   1/1     Running   0          50s
 
 
-[root@ip-172-31-5-72 k8s-specifications]# kubectl get pods
-NAME                      READY   STATUS    RESTARTS   AGE
-db-b54cd94f4-qm25g        1/1     Running   0          7h28m
-redis-868d64d78-n2ssn     1/1     Running   0          9h
-result-5d57b59f4b-bhmtk   1/1     Running   0          9h
-result-5d57b59f4b-gghqh   1/1     Running   0          16s
-vote-94849dc97-v9h5g      1/1     Running   0          8h
-worker-dd46d7584-z4hlf    1/1     Running   1          8h
-[root@ip-172-31-5-72 k8s-specifications]#
-
+[root@ip-172-31-5-72 ~]# kubectl logs result-5d57b59f4b-xhl5b
+Tue, 06 Dec 2022 05:19:23 GMT body-parser deprecated bodyParser: use individual json/urlencoded middlewares at server.js:67:9
+Tue, 06 Dec 2022 05:19:23 GMT body-parser deprecated undefined extended: provide extended option at ../node_modules/body-parser/index.js:105:29
+App running on port 80
+Connected to db
+[root@ip-172-31-5-72 ~]#
 
 After that able to see the results in results page for respective votes.
+
+I have learnt how to create pod's, service, deployment & rs.
+
+Learnt how to troubleshoot if any issues occured from the training session.
+
